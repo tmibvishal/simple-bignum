@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/vishal/Downloads/iitd things/4th sem/cop290/assignments/assignment 3/Assignment 3/clion/main.c
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+
