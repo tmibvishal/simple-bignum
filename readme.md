@@ -7,6 +7,13 @@ Arbitrary-Precision arithmetic, also known as "bignum" or simply "long arithmeti
 
 This project was an assignment for my course COP290 Design Practices at IIT Delhi in which I had to implement "bignum", so I added this on GitHub.
 
+Program supports the following:
+
+- addition, subtraction, multiplication and division.
+- Square Root, abs, power(exp)
+
+It also works for negative numbers.
+
 ### Running the programming
 ```
 $ make
