@@ -176,8 +176,8 @@ void copyBignum(bignum *copyFrom, bignum *copyTo, int noOfMFDtoCopy, int doRound
                 copyTo->revdigits[i] = copyFrom->revdigits[i + k];
             }
         }
-        
-        
+
+
         if (k>=1 && doRounding) {
             if (copyFrom->revdigits[k - 1] > '5') {
 //                char s = "0";
@@ -194,6 +194,18 @@ void copyBignum(bignum *copyFrom, bignum *copyTo, int noOfMFDtoCopy, int doRound
             }
         }
     }
+}
+
+void fixTrailingZero(bignum *bi) {
+    int i = 0;
+    while (i < bi->decimal) {
+        if (bi->revdigits[i] == '0') i += 1;
+        else break;
+    }
+    // i is no of trailing 0
+    bignum temp = bignum_default;
+    copyBignum(bi, &temp, -1, 0);
+    copyBignum(&temp, bi, temp.size - i, 0);
 }
 
 void uadd(bignum *b1, bignum *b2, bignum *ans, int c, int initialize) {
@@ -353,7 +365,7 @@ void usub(bignum *b1, bignum *b2, bignum *ans) {
 
 void sadd(bignum *b1, bignum *b2, bignum *ans) { // signed add
     if (b1->sign == b2->sign) {
-        uadd(b1, b2, ans, 0, 0);
+        uadd(b1, b2, ans, 0, 1);
         ans->sign = b1->sign;
     } else {
         if (b2->sign == MINUS) {
@@ -373,9 +385,9 @@ void ssub(bignum *b1, bignum *b2, bignum *ans) { // signed sub
         }
     } else {
         if (b2->sign == MINUS) {
-            uadd(b1, b2, ans, 0, 0);
+            uadd(b1, b2, ans, 0, 1);
         } else {
-            uadd(b2, b1, ans, 0, 0);
+            uadd(b2, b1, ans, 0, 1);
             ans->sign = PLUS;
         }
     }
@@ -465,6 +477,19 @@ void multiplyBy10Pow(bignum *from, bignum *to, int power) {
 }
 
 void sdivide(bignum *b1, bignum *b2, bignum *ans, int precision, int roundOffLastDigit) {
+
+    if (isZero(b1)) {
+        char str[2];
+        str[0] = '0'; // don't remove 0 from here
+        str[1] = '\0';
+        initialize_bignum(ans, str);
+        return;
+    }
+
+    if (isZero(b2)) {
+        printf("error: division by 0 not allowed");
+        exit(1);
+    }
     // b1 is dividend and b2 is divisor
     bignum dividend = bignum_default;
     copyBignum(b1, &dividend, -1, 0);
@@ -564,6 +589,16 @@ void sdivide(bignum *b1, bignum *b2, bignum *ans, int precision, int roundOffLas
 
 void usquareRoot(bignum *b1, bignum *ans, int precision, int roundOffLastDigit) {
     // making a copy in dividend and making decimal places 0 and making a 0 initial divisor
+
+    if (isZero(b1)) {
+        char str[2];
+        str[0] = '0'; // don't remove 0 from here
+        str[1] = '\0';
+        initialize_bignum(ans, str);
+        return;
+    }
+
+
     bignum divisor = bignum_default;
     generateZero(&divisor);
     bignum dividend = bignum_default;
@@ -713,10 +748,10 @@ void spower(bignum *b1, bignum *b2, bignum *ans, int precision, int roundingOff)
         if (lsb % 2 == 0) {
             anssign = PLUS;
         } else {
-            anssign = MINUS;
+            anssign = b1Duplicate.sign;
         }
     }
-    if (b2Duplicate.size == MINUS) {
+    if (b2Duplicate.sign == MINUS) {
         bignum temp = bignum_default;
         generateOne(&temp);
         sdivide(&temp, &b1Duplicate, &b1Duplicate, 2*precision, 0);
@@ -733,33 +768,143 @@ void spower(bignum *b1, bignum *b2, bignum *ans, int precision, int roundingOff)
     freeMallocSpace(&b2Duplicate);
 }
 
+void string_bignum(bignum *bi, char* output) {
+    int c = 0;
+    if (bi->sign == MINUS) {
+        output[c] = '-';
+        c += 1;
+    }
+    for (int i = bi->size - 1; i >= 0; i--) {
+        output[c] = bi->revdigits[i];
+        c += 1;
+        if (i == bi->decimal && i != 0) { output[c] = '.'; c += 1; }
+    }
+    output[c] = '\n';
+    output[c+1] = '\0';
+}
+
 void print_bignum(bignum *bi) {
     if (bi->sign == MINUS) {
         printf("-");
     }
     for (int i = bi->size - 1; i >= 0; i--) {
         printf("%c", bi->revdigits[i]);
-        if (i == bi->decimal) printf(".");
+        if (i == bi->decimal  && i != 0) printf(".");
     }
     printf("\n");
 }
 
-int main() {
-    printf("Hello, World!\n");
+void parseSpace(char* cmd, char** argv) {
+    int len = strlen(cmd);
+    if (cmd[len - 1] == '\n') {
+        len--;
+        cmd[len] = '\0'; // so as to avoid getting \n
+    }
+
+    char* str = strtok(cmd," ");
+    int i = 0;
+    while (str != NULL) {
+        argv[i] = str;
+        str = strtok(NULL," ");
+        i += 1;
+    }
+    argv[i] = NULL;
+}
+
+void execute(char* tokens[], char* output, int precision, int roundingOff) {
+
     bignum b1 = bignum_default;
     bignum b2 = bignum_default;
     bignum ans = bignum_default;
-    initialize_bignum(&b1, "2.");
-    initialize_bignum(&b2, "-2.");
 
-    absolute(&b2);
 
-    print_bignum(&b1);
-    print_bignum(&b2);
-    // sdivide(&b1, &b2, &ans, 20, 0);
-    // usquareRoot(&b1, &ans, 20, 0);
-    // smultiply(&b1, &b2, &ans);
-    spower(&b1, &b2, &ans, 20, 0);
-    print_bignum(&ans);
+    if (strcmp(tokens[0], "ADD") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        initialize_bignum(&b2, tokens[2]);
+        sadd(&b1, &b2, &ans);
+    } else if(strcmp(tokens[0], "SUB") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        initialize_bignum(&b2, tokens[2]);
+        ssub(&b1, &b2, &ans);
+    } else if(strcmp(tokens[0], "MUL") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        initialize_bignum(&b2, tokens[2]);
+        smultiply(&b1, &b2, &ans);
+    } else if(strcmp(tokens[0], "DIV") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        initialize_bignum(&b2, tokens[2]);
+        sdivide(&b1, &b2, &ans, 20, 0);
+    } else if(strcmp(tokens[0], "ABS") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        absolute(&b1);
+        copyBignum(&b1, &ans, -1, 0);
+    } else if(strcmp(tokens[0], "POW") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        initialize_bignum(&b2, tokens[2]);
+        spower(&b1, &b2, &ans, 20, 0);
+    } else if(strcmp(tokens[0], "SQRT") == 0) {
+        initialize_bignum(&b1, tokens[1]);
+        usquareRoot(&b1, &ans, 20, 0);
+    } else {
+        printf("error: invalid line in input file");
+    }
+
+    if (ans.decimal > (precision)) {
+        bignum temp2 = bignum_default;
+        copyBignum(&ans, &temp2, ans.size - ans.decimal + precision, roundingOff);
+        copyBignum(&temp2, &ans, -1, 0);
+        freeMallocSpace(&temp2);
+    }
+
+    fixLeadingZero(&ans);
+    fixTrailingZero(&ans);
+    string_bignum(&ans, output);
+    freeMallocSpace(&b1);
+    freeMallocSpace(&b2);
+    freeMallocSpace(&ans);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        printf("error: pass arguments of input file and output file");
+        exit(1);
+    }
+    FILE *outputFilePointer ;
+    char dataToBeWritten[50000];
+    outputFilePointer = fopen(argv[2], "w") ;
+
+    FILE *inputFilePointer;
+    char dataToBeRead[50000];
+    char* tokens[30];
+    inputFilePointer = fopen(
+            argv[1],
+            "r");
+    if (inputFilePointer == NULL || outputFilePointer == NULL) {
+        printf("error: input file failed to open");
+    } else {
+         while (fgets(dataToBeRead, 50000, inputFilePointer) != NULL) {
+            // Print the dataToBeRead
+            // printf("%s", dataToBeRead);
+            parseSpace(dataToBeRead, tokens);
+            execute(tokens, dataToBeWritten, 20, 0);
+            printf(dataToBeWritten);
+            // fputs(dataToBeWritten, outputFilePointer);
+        }
+        fclose(inputFilePointer);
+    }
+//
+//
+//    absolute(&b2);
+//
+//    printf("\n");
+//    printf("\n");
+//    printf("\n");
+//    print_bignum(&b1);
+//    print_bignum(&b2);
+//    sdivide(&b1, &b2, &ans, 20, 0);
+//    // usquareRoot(&b1, &ans, 20, 0);
+//    // smultiply(&b1, &b2, &ans);
+//    // spower(&b1, &b2, &ans, 20, 0);
+//    print_bignum(&ans);
     return 0;
 }
