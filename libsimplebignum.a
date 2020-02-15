@@ -1,13 +1,11 @@
+!<arch>
+main.c          1581354190  501   20    100644  26859     `
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #define PLUS 0
 #define MINUS 1
-
-#ifndef MAXSIZE
-#define MAXSIZE 50001
-#endif
 
 /*
 
@@ -37,7 +35,7 @@ int max(int n1, int n2) {
 }
 
 char* mallocWithError(int length) {
-    char *ptr = (char *) malloc(length + 1);
+    char* ptr = (char*) malloc(length+1);
     if (ptr != NULL) {
         ptr[length] = '\0';
         return ptr;
@@ -47,7 +45,7 @@ char* mallocWithError(int length) {
     }
 }
 
-void freeMallocSpace(bignum *bi) {
+void freeMallocSpace (bignum* bi) {
     if (bi->revdigits != NULL) {
         free(bi->revdigits);
         bi->revdigits = NULL;
@@ -57,7 +55,7 @@ void freeMallocSpace(bignum *bi) {
 void fixLeadingZero(bignum *bi) {
     int i = bi->size - 1;
     while (i > bi->decimal) {
-        if (bi->revdigits[i] == '0') {
+        if (bi->revdigits[i]=='0') {
             bi->revdigits[i] = '\0';
             bi->size -= 1;
         } else {
@@ -68,7 +66,7 @@ void fixLeadingZero(bignum *bi) {
 }
 
 int isZero(bignum *bi) {
-    for (int i = 0; i < bi->size; i++) {
+    for (int i=0; i<bi->size; i++) {
         if (bi->revdigits[i] != '0') return 0;
     }
     return 1;
@@ -76,17 +74,17 @@ int isZero(bignum *bi) {
 
 int isOne(bignum *bi) {
     fixLeadingZero(bi);
-    if (bi->size - bi->decimal != 1 || bi->revdigits[bi->size - 1] != '1') return 0;
-    for (int i = 0; i < bi->decimal; i++) {
+    if (bi->size - bi->decimal != 1 || bi->revdigits[bi->size-1] != '1') return 0;
+    for (int i=0; i<bi->decimal;i++) {
         if (bi->revdigits[i] != '0') return 0;
     }
     return 1;
 }
 
-void generateEmpty(bignum *biempty) {
-    biempty->decimal = 0;
-    biempty->size = 0;
-    biempty->sign = PLUS;
+void generateEmpty(bignum *zero) {
+    zero->decimal = 0;
+    zero->size = 0;
+    zero->sign = PLUS;
 }
 
 void generateZero(bignum *one) {
@@ -143,7 +141,7 @@ void initialize_bignum(bignum *bi, char *str) {
                     bi->decimal = 1 + j;
                     i += 1;
                 }
-                if (i == strlength) {
+                if (i == strlength){
                     break;
                 }
                 if (str[i] >= '0' && str[i] <= '9') {
@@ -162,7 +160,6 @@ void initialize_bignum(bignum *bi, char *str) {
 }
 
 void uadd(bignum *b1, bignum *b2, bignum *ans, int c, int initialize);
-
 void copyBignum(bignum *copyFrom, bignum *copyTo, int noOfMFDtoCopy, int doRounding) {
     // freeing space for revdigits of old copyTo
     freeMallocSpace(copyTo);
@@ -193,7 +190,7 @@ void copyBignum(bignum *copyFrom, bignum *copyTo, int noOfMFDtoCopy, int doRound
         }
 
 
-        if (k >= 1 && doRounding) {
+        if (k>=1 && doRounding) {
             if (copyFrom->revdigits[k - 1] > '5') {
 //                char s = "0";
 //                int i=0;
@@ -279,6 +276,7 @@ void uadd(bignum *b1, bignum *b2, bignum *ans, int c, int initialize) {
 }
 
 
+
 void complementOfNonZero(bignum *bi) {
     for (int i = 0; i < bi->size; i++) {
         bi->revdigits[i] = '9' - bi->revdigits[i] + '0';
@@ -305,12 +303,12 @@ void appendIgnoringDecimal(bignum *b1, bignum *b2, bignum *ans) {
     ans->size = length;
     ans->revdigits = mallocWithError(length * sizeof(char));
     int i = 0;
-    for (; i < b2Duplicate.size; i++) {
+    for (;i<b2Duplicate.size;i++) {
         ans->revdigits[i] = b2Duplicate.revdigits[i];
     }
     int j = 0;
-    for (; j < b1Duplicate.size; j++) {
-        ans->revdigits[i + j] = b1Duplicate.revdigits[j];
+    for (;j<b1Duplicate.size;j++) {
+        ans->revdigits[i+j] = b1Duplicate.revdigits[j];
     }
 }
 
@@ -477,7 +475,7 @@ void multiplyBy10Pow(bignum *from, bignum *to, int power) {
     char *s = mallocWithError((power + 2) * sizeof(char));
     s[0] = '0' + 1;
     int i = 1;
-    for (; i < power + 1; i++) {
+    for (; i < power+1; i++) {
         s[i] = '0' + 0;
     }
     s[i] = '\0';
@@ -535,16 +533,17 @@ void sdivide(bignum *b1, bignum *b2, bignum *ans, int precision, int roundOffLas
         dividend.decimal = 0;
         divisor.decimal = 0;
     }
-    int tempPrecision = roundOffLastDigit ? precision + 1 : precision;
+    int tempPrecision = roundOffLastDigit ? precision+1 : precision;
     multiplyBy10Pow(&dividend, &tempans, tempPrecision);
     copyBignum(&tempans, &dividend, -1, 0);
+
 
 
     bignum temp = bignum_default;
     bignum subtractionResult = bignum_default;
 
     int dividendSize = dividend.size; // because it changes while division
-    char *ansStr = mallocWithError((dividendSize + 1) * sizeof(char));
+    char* ansStr = mallocWithError((dividendSize+1) * sizeof(char));
     int totalCounter = 1;
     for (totalCounter = 1; totalCounter <= dividendSize; totalCounter++) {
         int i = 0;
@@ -583,7 +582,7 @@ void sdivide(bignum *b1, bignum *b2, bignum *ans, int precision, int roundOffLas
     if (roundOffLastDigit == 1) {
         initialize_bignum(&temp, ansStr);
         temp.decimal = precision + 1;
-        copyBignum(&temp, ans, temp.size - 1, 1); // rounding off one extra precision made
+        copyBignum(&temp, ans, temp.size-1, 1); // rounding off one extra precision made
     } else {
         initialize_bignum(ans, ansStr);
     }
@@ -597,14 +596,6 @@ void sdivide(bignum *b1, bignum *b2, bignum *ans, int precision, int roundOffLas
     freeMallocSpace(&divisor);
     freeMallocSpace(&subtractionResult);
     freeMallocSpace(&dividend);
-}
-
-
-void generateReciprocal (bignum *b1, bignum *ans, int precision, int roundOffLastDigit) {
-    bignum one = bignum_default;
-    generateOne(&one);
-    sdivide(&one, b1, ans, precision, roundOffLastDigit);
-    freeMallocSpace(&one);
 }
 
 void usquareRoot(bignum *b1, bignum *ans, int precision, int roundOffLastDigit) {
@@ -623,12 +614,12 @@ void usquareRoot(bignum *b1, bignum *ans, int precision, int roundOffLastDigit) 
     generateEmpty(&divisor);
     bignum dividend = bignum_default;
     if (b1->decimal % 2 != 0) {
-        copyBignum(b1, &dividend, b1->size + 1, 0);
+        copyBignum(b1, &dividend, b1->size+1, 0);
     } else {
         copyBignum(b1, &dividend, -1, 0);
     }
 
-    int tempPrecision = roundOffLastDigit ? (2 * precision - dividend.decimal + 2) : (2 * precision - dividend.decimal);
+    int tempPrecision = roundOffLastDigit ? (2*precision - dividend.decimal + 2) : (2*precision - dividend.decimal);
     int ansDecimal = precision;
     int ansSign = dividend.sign;
     dividend.decimal = 0;
@@ -638,21 +629,22 @@ void usquareRoot(bignum *b1, bignum *ans, int precision, int roundOffLastDigit) 
     fixLeadingZero(&dividend);
 
 
+
     bignum temp = bignum_default;
     bignum tempmult = bignum_default;
     bignum subtractionResult = bignum_default;
 
     int dividendSize = dividend.size; // because it changes while division
-    char *ansStr = mallocWithError((dividendSize + 1) * sizeof(char));
+    char* ansStr = mallocWithError((dividendSize+1) * sizeof(char));
 
     int totalCounter;
     int strCounter = 0;
-    if (dividend.size % 2 == 0) {
+    if (dividend.size % 2 ==0 ) {
         totalCounter = 2;
     } else {
         totalCounter = 1;
     }
-    for (; totalCounter <= dividendSize; totalCounter += 2) {
+    for (; totalCounter <= dividendSize; totalCounter+=2) {
         int i = 0;
         for (; i <= 9; i++) {
             char str[3];
@@ -691,7 +683,7 @@ void usquareRoot(bignum *b1, bignum *ans, int precision, int roundOffLastDigit) 
     if (roundOffLastDigit == 1) {
         initialize_bignum(&temp, ansStr);
         temp.decimal = precision + 1;
-        copyBignum(&temp, ans, temp.size - 1, 1); // rounding off one extra precision made
+        copyBignum(&temp, ans, temp.size-1, 1); // rounding off one extra precision made
     } else {
         initialize_bignum(ans, ansStr);
     }
@@ -724,7 +716,7 @@ void powerHelper(bignum *b1, bignum *b2, bignum *ans, int precision) {
 
     if (b2->size > 0) {
         int lsb = b2->revdigits[0] - '0';
-        if (lsb % 2 == 0) {
+        if(lsb % 2 == 0){
             char *s = mallocWithError((2) * sizeof(char));
             s[0] = '2';
             s[1] = '\0';
@@ -747,7 +739,7 @@ void powerHelper(bignum *b1, bignum *b2, bignum *ans, int precision) {
     }
 }
 
-void absolute(bignum *bi, bignum *ans) {
+void absolute(bignum *bi, bignum* ans) {
     copyBignum(bi, ans, -1, 0);
     ans->sign = PLUS;
 }
@@ -774,7 +766,7 @@ void spower(bignum *b1, bignum *b2, bignum *ans, int precision, int roundingOff)
     if (b2Duplicate.sign == MINUS) {
         bignum temp = bignum_default;
         generateOne(&temp);
-        sdivide(&temp, &b1Duplicate, &b1Duplicate, 2 * precision, 0);
+        sdivide(&temp, &b1Duplicate, &b1Duplicate, 2*precision, 0);
     }
     powerHelper(&b1Duplicate, &b2Duplicate, ans, precision);
     if (ans->decimal > (precision)) {
@@ -788,32 +780,7 @@ void spower(bignum *b1, bignum *b2, bignum *ans, int precision, int roundingOff)
     freeMallocSpace(&b2Duplicate);
 }
 
-void ufactorial(bignum *bi, bignum *ans) {
-
-    bignum one = bignum_default;
-    generateOne(&one);
-
-    bignum biDuplicate = bignum_default; // in case from and to are same
-    copyBignum(bi, &biDuplicate, -1, 0);
-
-    freeMallocSpace(ans);
-
-    generateOne(ans);
-    if (biDuplicate.decimal > 0) {
-        printf("error: only integers factorial can be calculated");
-        exit(1);
-    }
-
-    while(!(isZero(&biDuplicate))) {
-        smultiply(ans, &biDuplicate, ans);
-        ssub(&biDuplicate, &one, &biDuplicate);
-    }
-
-    freeMallocSpace(&biDuplicate);
-    freeMallocSpace(&one);
-}
-
-void string_bignum(bignum *bi, char *output) {
+void string_bignum(bignum *bi, char* output) {
     int c = 0;
     if (bi->sign == MINUS) {
         output[c] = '-';
@@ -822,13 +789,10 @@ void string_bignum(bignum *bi, char *output) {
     for (int i = bi->size - 1; i >= 0; i--) {
         output[c] = bi->revdigits[i];
         c += 1;
-        if (i == bi->decimal && i != 0) {
-            output[c] = '.';
-            c += 1;
-        }
+        if (i == bi->decimal && i != 0) { output[c] = '.'; c += 1; }
     }
     output[c] = '\n';
-    output[c + 1] = '\0';
+    output[c+1] = '\0';
 }
 
 void print_bignum(bignum *bi) {
@@ -837,91 +801,90 @@ void print_bignum(bignum *bi) {
     }
     for (int i = bi->size - 1; i >= 0; i--) {
         printf("%c", bi->revdigits[i]);
-        if (i == bi->decimal && i != 0) printf(".");
+        if (i == bi->decimal  && i != 0) printf(".");
     }
     printf("\n");
 }
-
-
-void parseSpace(char* cmd, char** argv) {
-    int len = strlen(cmd);
-    if (cmd[len - 1] == '\n') {
-        len--;
-        cmd[len] = '\0'; // so as to avoid getting \n
-    }
-
-    char* str = strtok(cmd," ");
-    int i = 0;
-    while (str != NULL) {
-        argv[i] = str;
-        str = strtok(NULL," ");
-        i += 1;
-    }
-    argv[i] = NULL;
-}
-
-void execute(char* tokens[], char* output, int precision, int roundingOff) {
-
-    bignum b1 = bignum_default;
-    bignum b2 = bignum_default;
-    bignum ans = bignum_default;
-
-    if (strcmp(tokens[0], "ADD") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        initialize_bignum(&b2, tokens[2]);
-        sadd(&b1, &b2, &ans);
-    } else if(strcmp(tokens[0], "SUB") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        initialize_bignum(&b2, tokens[2]);
-        ssub(&b1, &b2, &ans);
-    } else if(strcmp(tokens[0], "MUL") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        initialize_bignum(&b2, tokens[2]);
-        smultiply(&b1, &b2, &ans);
-    } else if(strcmp(tokens[0], "DIV") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        initialize_bignum(&b2, tokens[2]);
-        sdivide(&b1, &b2, &ans, 20, 0);
-    } else if(strcmp(tokens[0], "ABS") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        absolute(&b1, &ans);
-    } else if(strcmp(tokens[0], "POW") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        initialize_bignum(&b2, tokens[2]);
-        spower(&b1, &b2, &ans, 20, 0);
-    } else if(strcmp(tokens[0], "SQRT") == 0) {
-        initialize_bignum(&b1, tokens[1]);
-        usquareRoot(&b1, &ans, 20, 0);
-    } else {
-        printf("error: invalid line in input file");
-    }
-
-    if (ans.decimal > (precision)) {
-        bignum temp2 = bignum_default;
-        copyBignum(&ans, &temp2, ans.size - ans.decimal + precision, roundingOff);
-        copyBignum(&temp2, &ans, -1, 0);
-        freeMallocSpace(&temp2);
-    }
-
-    fixLeadingZero(&ans);
-    fixTrailingZero(&ans);
-    string_bignum(&ans, output);
-    freeMallocSpace(&b1);
-    freeMallocSpace(&b2);
-    freeMallocSpace(&ans);
-}
-
-int main(int argc, char *argv[]) {
+//
+//void parseSpace(char* cmd, char** argv) {
+//    int len = strlen(cmd);
+//    if (cmd[len - 1] == '\n') {
+//        len--;
+//        cmd[len] = '\0'; // so as to avoid getting \n
+//    }
+//
+//    char* str = strtok(cmd," ");
+//    int i = 0;
+//    while (str != NULL) {
+//        argv[i] = str;
+//        str = strtok(NULL," ");
+//        i += 1;
+//    }
+//    argv[i] = NULL;
+//}
+//
+//void execute(char* tokens[], char* output, int precision, int roundingOff) {
+//
+//    bignum b1 = bignum_default;
+//    bignum b2 = bignum_default;
+//    bignum ans = bignum_default;
+//
+//    if (strcmp(tokens[0], "ADD") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        initialize_bignum(&b2, tokens[2]);
+//        sadd(&b1, &b2, &ans);
+//    } else if(strcmp(tokens[0], "SUB") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        initialize_bignum(&b2, tokens[2]);
+//        ssub(&b1, &b2, &ans);
+//    } else if(strcmp(tokens[0], "MUL") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        initialize_bignum(&b2, tokens[2]);
+//        smultiply(&b1, &b2, &ans);
+//    } else if(strcmp(tokens[0], "DIV") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        initialize_bignum(&b2, tokens[2]);
+//        sdivide(&b1, &b2, &ans, 20, 0);
+//    } else if(strcmp(tokens[0], "ABS") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        absolute(&b1, &ans);
+//    } else if(strcmp(tokens[0], "POW") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        initialize_bignum(&b2, tokens[2]);
+//        spower(&b1, &b2, &ans, 20, 0);
+//    } else if(strcmp(tokens[0], "SQRT") == 0) {
+//        initialize_bignum(&b1, tokens[1]);
+//        usquareRoot(&b1, &ans, 20, 0);
+//    } else {
+//        printf("error: invalid line in input file");
+//    }
+//
+//    if (ans.decimal > (precision)) {
+//        bignum temp2 = bignum_default;
+//        copyBignum(&ans, &temp2, ans.size - ans.decimal + precision, roundingOff);
+//        copyBignum(&temp2, &ans, -1, 0);
+//        freeMallocSpace(&temp2);
+//    }
+//
+//    fixLeadingZero(&ans);
+//    fixTrailingZero(&ans);
+//    string_bignum(&ans, output);
+//    freeMallocSpace(&b1);
+//    freeMallocSpace(&b2);
+//    freeMallocSpace(&ans);
+//}
+//
+//int main(int argc, char *argv[]) {
 //    if (argc < 3) {
 //        printf("error: pass arguments of input file and output file");
 //        exit(1);
 //    }
 //    FILE *outputFilePointer ;
-//    char dataToBeWritten[MAXSIZE];
+//    char dataToBeWritten[50000];
 //    outputFilePointer = fopen(argv[2], "w") ;
 //
 //    FILE *inputFilePointer;
-//    char dataToBeRead[MAXSIZE];
+//    char dataToBeRead[50000];
 //    char* tokens[30];
 //    inputFilePointer = fopen(
 //            argv[1],
@@ -929,7 +892,7 @@ int main(int argc, char *argv[]) {
 //    if (inputFilePointer == NULL || outputFilePointer == NULL) {
 //        printf("error: input file failed to open");
 //    } else {
-//         while (fgets(dataToBeRead, MAXSIZE, inputFilePointer) != NULL) {
+//         while (fgets(dataToBeRead, 50000, inputFilePointer) != NULL) {
 //            // Print the dataToBeRead
 //            // printf("%s", dataToBeRead);
 //            parseSpace(dataToBeRead, tokens);
@@ -939,23 +902,20 @@ int main(int argc, char *argv[]) {
 //        }
 //        fclose(inputFilePointer);
 //    }
-//
-//
-//    absolute(&b2);
-//
+////
+////
+////    absolute(&b2);
+////
+////    printf("\n");
+////    printf("\n");
+////    printf("\n");
+////    print_bignum(&b1);
+////    print_bignum(&b2);
+////    sdivide(&b1, &b2, &ans, 20, 0);
+////    // usquareRoot(&b1, &ans, 20, 0);
+////    // smultiply(&b1, &b2, &ans);
+////    // spower(&b1, &b2, &ans, 20, 0);
+////    print_bignum(&ans);
+//    return 0;
+//}
 
-    bignum b1 = bignum_default;
-    bignum b2 = bignum_default;
-    bignum ans = bignum_default;
-    initialize_bignum(&b1, "1000");
-    initialize_bignum(&b2, "0");
-    print_bignum(&b1);
-    print_bignum(&b2);
-    ufactorial(&b1, &ans);
-    // sdivide(&b1, &b2, &ans, 20, 0);
-    // usquareRoot(&b1, &ans, 20, 0);
-    // smultiply(&b1, &b2, &ans);
-    // spower(&b1, &b2, &ans, 20, 0);
-    print_bignum(&ans);
-    return 0;
-}
