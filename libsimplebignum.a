@@ -368,7 +368,7 @@ void usub(bignum *b1, bignum *b2, bignum *ans) {
     }
     if (c) {
         ans->sign = MINUS;
-        complementOfNonZero(ans);
+        twoComplementOfNonZero(ans);
     }
 
     freeMallocSpace(&b1Duplicate);
